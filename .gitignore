@@ -1,0 +1,8 @@
+# Dependency directories
+node_modules/
+yarn.lock
+.vscode
+.env
+
+client/node_modules
+client/build
