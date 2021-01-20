@@ -72,7 +72,7 @@ const IpcamServerComponent =(props) =>{
     {id:0, ip:'rtsp://195.46.114.132/live/ch00_0', port: 7000, type: '', url:'', del:false, err:false},
     {id:1, ip:'rtsp://98.163.61.242/live/ch00_0', port: 7001, type: '', url:'', del:false, err:false},
     {id:2, ip:'rtsp://91.191.213.49:554/live_mpeg4.sdp', port: 7002, type: '', url:'', del:false, err:false},
-    {id:3, ip:'/home/dilip/Downloads/sample.mp4', port: 7003, type: '', url:'', del:false, err:false},
+    // {id:3, ip:'/home/dilip/Downloads/sample.mp4', port: 7003, type: '', url:'', del:false, err:false},
     // {id:3, cam:'Hessdalen', ip:'rtsp://freja.hiof.no:1935/rtplive/definst/hessdalen03.stream', del:false, err:false}
   ]);
 
