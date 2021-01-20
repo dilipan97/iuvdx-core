@@ -69,9 +69,9 @@ const IpcamServerComponent =(props) =>{
 
   // newly added cameras will go into tableRows
   const [tableRows, setTableRows] = useState([
-    // {id:0, ip:'rtsp://195.46.114.132/live/ch00_0', port: 6000, type: '', url:'', del:false, err:false},
-    // {id:1, ip:'rtsp://98.163.61.242/live/ch00_0', port: 6001, type: '', url:'', del:false, err:false},
-    // {id:2, ip:'rtsp://91.191.213.49:554/live_mpeg4.sdp', port:6002, type: '', url:'', del:false, err:false},
+    {id:0, ip:'rtsp://195.46.114.132/live/ch00_0', port: 6000, type: '', url:'', del:false, err:false},
+    {id:1, ip:'rtsp://98.163.61.242/live/ch00_0', port: 6001, type: '', url:'', del:false, err:false},
+    {id:2, ip:'rtsp://91.191.213.49:554/live_mpeg4.sdp', port:6002, type: '', url:'', del:false, err:false},
     {id:3, ip:'/home/dilip/Downloads/sample.mp4', port:6003, type: '', url:'', del:false, err:false},
     // {id:3, cam:'Hessdalen', ip:'rtsp://freja.hiof.no:1935/rtplive/definst/hessdalen03.stream', del:false, err:false}
   ]);
@@ -91,7 +91,7 @@ const IpcamServerComponent =(props) =>{
     trows[idx] = {
       id: trows[idx].id,
       ip: trows[idx].ip !== ''? trows[idx].ip: '',
-      port: trows[idx].port !== ''? trows[idx].port: '',
+      port: trows[idx].port !== 0? trows[idx].port: 0,
       type: trows[idx].type !== ''? trows[idx].type: '',
       url: trows[idx].url,
       del: e.target.checked,
@@ -187,7 +187,7 @@ const IpcamServerComponent =(props) =>{
     const item = {
       id   : rowId,
       ip   : '',
-      port : '',
+      port : 0,
       type : '',
       url  : '',
       del  : false,
@@ -214,7 +214,7 @@ const IpcamServerComponent =(props) =>{
       rows[idx] = {
         id     : rows[idx].id,
         [name] : value,
-        port   : rows[idx].port !== ''? rows[idx].port: '',
+        port   : rows[idx].port !== 0? rows[idx].port: 0,
         type   : rows[idx].type !== ''? rows[idx].type: '',
         url    : '',
         del    : rows[idx].del? true: false,
@@ -225,7 +225,7 @@ const IpcamServerComponent =(props) =>{
       rows[idx] = {
         id     : rows[idx].id,
         ip     : rows[idx].ip !== ''? rows[idx].ip: '',
-        [name] : value,
+        [name] : Number(value),
         type   : rows[idx].type !== ''? rows[idx].type: '',
         url    : '',
         del    : rows[idx].del? true: false,
@@ -236,7 +236,7 @@ const IpcamServerComponent =(props) =>{
       rows[idx] = {
         id     : rows[idx].id,
         ip     : rows[idx].ip !== ''? rows[idx].ip: '',
-        port   : rows[idx].port !== ''? rows[idx].port: '',
+        port   : rows[idx].port !== 0? rows[idx].port: 0,
         [name] : value,
         url    : '',
         del    : rows[idx].del? true: false,

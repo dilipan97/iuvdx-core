@@ -135,14 +135,12 @@ function publishCameras() {
                 // looping through all connected cameras
                 Object.entries(activeConnections).forEach(function(connection) {
                     let ac = activeConnections[connection[0]];
-                    if(isIpcamConnection && ac.platform === ConnectionType.IPCAM && ac.serverData !== undefined) {
+                    if((ac.platform === ConnectionType.IPCAM || ac.connectionProperties.type === 'rtsptortp' || 
+                            ac.connectionProperties.type === 'rtsptortsp' || ac.connectionProperties.type === 'filetortsp') 
+                            && ac.serverData !== undefined) {
                         console.log('Ip Camera already connected : ' + ac.serverData);
                         publishedCameras.push(ac.serverData);
                     }
-                    else if(ac.connectionProperties.type === 'rtsptortp' || ac.connectionProperties.type === 'rtsptortsp'
-                        || ac.connectionProperties.type === 'filetortsp') {
-                        publishedCameras.push(ac.connectionProperties.rtspUri);
-                    }
                 });
             }
             
@@ -184,14 +182,15 @@ function publishCameras() {
                     let cameraUri = ipcam.ip;
                     let serverPort = ipcam.port;
                     let serverType = ipcam.type;
+                    let serverData = ipcam.port.toString();
 
                     // check cameras already published in the session
-                    if(publishedCameras.indexOf(cameraUri) == -1) {
-                        
+                    if(publishedCameras.indexOf(serverData) == -1) {
+
                         let connectionProperties = {
                             "type": serverType,
                             "port": serverPort,
-                            "data": serverPort.toString(),
+                            "data": serverData,
                             "rtspUri": cameraUri
                         };
 
