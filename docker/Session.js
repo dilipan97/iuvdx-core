@@ -157,6 +157,43 @@ var Session = /** @class */ (function () {
             var data = JSON.stringify({
                 type: (!!connectionProperties && !!connectionProperties.type) ? connectionProperties.type : null,
                 data: (!!connectionProperties && !!connectionProperties.data) ? connectionProperties.data : null,
+                rtspUri: (!!connectionProperties && !!connectionProperties.rtspUri) ? connectionProperties.rtspUri : null,
+                kurentoOptions: (!!connectionProperties && !!connectionProperties.kurentoOptions) ? connectionProperties.kurentoOptions : null
+            });
+            axios_1.default.post(_this.ov.host + OpenVidu_1.OpenVidu.API_SESSIONS + '/' + _this.sessionId + '/connection', data, {
+                headers: {
+                    'Authorization': _this.ov.basicAuth,
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(function (res) {
+                if (res.status === 200) {
+                    // SUCCESS response from openvidu-server. Store and resolve Connection
+                    var connection = new Connection_1.Connection(res.data);
+                    _this.connections.push(connection);
+                    
+                    if (connection.status === 'active') {
+                        _this.activeConnections.push(connection);
+                    }
+                    resolve(new Connection_1.Connection(res.data));
+                }
+                else {
+                    // ERROR response from openvidu-server. Resolve HTTP status
+                    reject(new Error(res.status.toString()));
+                }
+            }).catch(function (error) {
+                _this.handleError(error, reject);
+            });
+        });
+    };
+
+    Session.prototype.createServerConnection = function (connectionProperties) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var data = JSON.stringify({
+                type: (!!connectionProperties && !!connectionProperties.type) ? connectionProperties.type : null,
+                data: (!!connectionProperties && !!connectionProperties.data) ? connectionProperties.data : null,
+                port: (!!connectionProperties && !!connectionProperties.port) ? connectionProperties.port : null,
                 rtspUri: (!!connectionProperties && !!connectionProperties.rtspUri) ? connectionProperties.rtspUri : null
             });
             axios_1.default.post(_this.ov.host + OpenVidu_1.OpenVidu.API_SESSIONS + '/' + _this.sessionId + '/connection', data, {
