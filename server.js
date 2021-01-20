@@ -160,9 +160,9 @@ function publishCameras() {
                             "adaptativeBitrate": true,
                             "onlyPlayWithSubscribers": true,
                             "networkCache": 2000,
-                            "kurentoOptions": {
-                                "allowedFilters": [ "GStreamerFilter" ]
-                            }
+                            // "kurentoOptions": {
+                            //     "allowedFilters": [ "GStreamerFilter" ]
+                            // }
                         };
 
                         // "mySession" being a Session object
