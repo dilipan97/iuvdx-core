@@ -10,6 +10,7 @@ import UserModel from '../../models/user-model';
 import ToolbarComponent from '../toolbar/ToolbarComponent';
 import IpCameraComponent from '../ip-camera/IpCameraComponent';
 import IpcamServerComponent from '../ipcam-server/IpcamServerComponent';
+import RecordingComponent from '../recording/RecordingComponent';
 import IpCamModel from '../../models/ipcam-model';
 import { config } from '../Constants';
 
@@ -34,10 +35,14 @@ export default class VideoRoomComponent extends Component {
             subscribers: [],
             ipCamSubscribers: [],
             chatDisplay: 'none',
-            modalOpen:false,
-            serverModalOpen:false,
+            modalOpen: false,
+            serverModalOpen: false,
+            recodingModalOpen: false,
             localUserOn: false,
             groupDisplay: true,
+            recordingId: undefined,
+            recordingActive: false,
+            record: false
         };
 
         this.joinSession = this.joinSession.bind(this);
@@ -55,13 +60,17 @@ export default class VideoRoomComponent extends Component {
         this.checkNotification = this.checkNotification.bind(this);
         this.checkSize = this.checkSize.bind(this);
         this.showIPCameraDialog = this.showIPCameraDialog.bind(this);
-        this.showIPCameraServerDialog = this.showIPCameraServerDialog.bind(this);	
+        this.showIPCameraServerDialog = this.showIPCameraServerDialog.bind(this);
+        this.showRecordingDialog = this.showRecordingDialog.bind(this);
         this.setClose = this.setClose.bind(this);
         this.setServerClose = this.setServerClose.bind(this);
+        this.setRecordingClose = this.setRecordingClose.bind(this);
         this.getIPToken = this.getIPToken.bind(this);
         this.removeCamera = this.removeCamera.bind(this);
         this.groupStatusChanged = this.groupStatusChanged.bind(this);
         this.leaveSessionPage = this.leaveSessionPage.bind(this);
+        this.startRecordCurrentSession = this.startRecordCurrentSession.bind(this);
+        this.stopRecordCurrentSession = this.stopRecordCurrentSession.bind(this);
     }
 
     componentDidMount() {
@@ -120,12 +129,12 @@ export default class VideoRoomComponent extends Component {
                 console.log(token);
                 this.connect(token);
             }).catch((error) => {
-                if(this.props.error){
+                if (this.props.error) {
                     this.props.error({ error: error.error, messgae: error.message, code: error.code, status: error.status });
                 }
                 console.log('There was an error getting the token:', error.code, error.message);
                 alert('There was an error getting the token:', error.message);
-              });
+            });
         }
     }
 
@@ -139,7 +148,7 @@ export default class VideoRoomComponent extends Component {
                 this.connectWebCam();
             })
             .catch((error) => {
-                if(this.props.error){
+                if (this.props.error) {
                     this.props.error({ error: error.error, messgae: error.message, code: error.code, status: error.status });
                 }
                 alert('There was an error connecting to the session:', error.message);
@@ -208,7 +217,7 @@ export default class VideoRoomComponent extends Component {
         localUser.setGroupActive(true);
         if (this.props.leaveSession) {
             this.props.leaveSession();
-        }   
+        }
     }
 
     leaveSessionPage() {
@@ -220,7 +229,7 @@ export default class VideoRoomComponent extends Component {
         localUser.getStreamManager().publishVideo(localUser.isVideoActive());
         this.sendSignalUserChanged({ isVideoActive: localUser.isVideoActive() });
         this.setState({ localUser: localUser });
-        this.setState({ localUserOn: !this.state.localUserOn})
+        this.setState({ localUserOn: !this.state.localUserOn })
     }
 
     micStatusChanged() {
@@ -238,7 +247,7 @@ export default class VideoRoomComponent extends Component {
     }
 
     deleteSubscriber(stream) {
-        if(stream.typeOfVideo === 'IPCAM') {
+        if (stream.typeOfVideo === 'IPCAM') {
             const remoteCams = this.state.ipCamSubscribers;
             const camStream = remoteCams.filter((user) => user.getStreamManager().stream === stream)[0];
             let index = remoteCams.indexOf(camStream, 0);
@@ -265,8 +274,8 @@ export default class VideoRoomComponent extends Component {
     subscribeToStreamCreated() {
         this.state.session.on('streamCreated', (event) => {
             const subscriber = this.state.session.subscribe(event.stream, undefined);
-            
-            if(event.stream.typeOfVideo === 'IPCAM') {
+
+            if (event.stream.typeOfVideo === 'IPCAM') {
                 var ipCamSubscribers = this.state.ipCamSubscribers;
                 subscriber.on('streamPlaying', (e) => {
                     subscriber.videos[0].video.parentElement.classList.remove('custom-class');
@@ -519,31 +528,52 @@ export default class VideoRoomComponent extends Component {
         }
     }
 
-    showIPCameraDialog(){
-        if(this.state.serverModalOpen) {
+    showIPCameraDialog() {
+        if (this.state.serverModalOpen) {
             this.setServerClose();
         }
-        this.setState({modalOpen:!this.state.modalOpen});
-    }
-       
-    showIPCameraServerDialog(){
-        if(this.state.modalOpen) {
-            this.showIPCameraDialog();
+        if (this.state.recodingModalOpen) {
+            this.setRecordingClose();
         }
-        this.setState({serverModalOpen:!this.state.serverModalOpen});
+        this.setState({ modalOpen: !this.state.modalOpen });
     }
 
-    setClose(){
-        this.setState({modalOpen:!this.state.modalOpen});
+    showIPCameraServerDialog() {
+        if (this.state.modalOpen) {
+            this.setClose();
+        }
+        if (this.state.recodingModalOpen) {
+            this.setRecordingClose();
+        }
+        this.setState({ serverModalOpen: !this.state.serverModalOpen });
     }
 
-    setServerClose(){
-        this.setState({serverModalOpen:!this.state.serverModalOpen});
+    showRecordingDialog() {
+        if (this.state.modalOpen) {
+            this.setClose();
+        }
+        if (this.state.serverModalOpen) {
+            this.setServerClose();
+        }
+        this.setState({ recodingModalOpen: !this.state.recodingModalOpen });
+    }
+
+    setClose() {
+        this.setState({ modalOpen: !this.state.modalOpen });
+    }
+
+    setServerClose() {
+        this.setState({ serverModalOpen: !this.state.serverModalOpen });
+    }
+
+    setRecordingClose() {
+        this.setState({ recodingModalOpen: !this.state.recodingModalOpen });
     }
 
     render() {
         const mySessionId = this.state.mySessionId;
         const localUser = this.state.localUser;
+        const record = this.state.record;
         var chatDisplay = { display: this.state.chatDisplay };
 
         return (
@@ -551,7 +581,9 @@ export default class VideoRoomComponent extends Component {
                 <ToolbarComponent
                     sessionId={mySessionId}
                     user={localUser}
+                    record={record}
                     showNotification={this.state.messageReceived}
+                    recordingActive={this.state.recordingActive}
                     camStatusChanged={this.camStatusChanged}
                     micStatusChanged={this.micStatusChanged}
                     groupStatusChanged={this.groupStatusChanged}
@@ -560,14 +592,16 @@ export default class VideoRoomComponent extends Component {
                     toggleFullscreen={this.toggleFullscreen}
                     leaveSessionPage={this.leaveSessionPage}
                     toggleChat={this.toggleChat}
-                    showIPCameraDialog= {this.showIPCameraDialog}
+                    showIPCameraDialog={this.showIPCameraDialog}
                     showIPCameraServerDialog={this.showIPCameraServerDialog}
+                    showRecordingDialog={this.showRecordingDialog}
+                    stopRecordCurrentSession={this.stopRecordCurrentSession}
                 />
 
                 <DialogExtensionComponent showDialog={this.state.showExtensionDialog} cancelClicked={this.closeDialogExtension} />
-                <IpCameraComponent open={this.state.modalOpen} setClose={this.setClose} getToken={this.getIPToken} removeCam={this.removeCamera}/>
-                <IpcamServerComponent open={this.state.serverModalOpen} setClose={this.setServerClose} getToken={this.getIPToken} removeCam={this.removeCamera}/>
-
+                <IpCameraComponent open={this.state.modalOpen} setClose={this.setClose} getToken={this.getIPToken} removeCam={this.removeCamera} />
+                <IpcamServerComponent open={this.state.serverModalOpen} setClose={this.setServerClose} getToken={this.getIPToken} removeCam={this.removeCamera} />
+                <RecordingComponent open={this.state.recodingModalOpen} setClose={this.setRecordingClose} startRecord={this.startRecordCurrentSession} />
 
                 <div id="layout" className="bounds">
                     {this.state.localUserOn && localUser !== undefined && localUser.getStreamManager() !== undefined && (
@@ -579,20 +613,20 @@ export default class VideoRoomComponent extends Component {
                                 </ul>
                             </div>
                         ) : (
-                            <div className="OT_root OT_publisher custom-class" id="localUser">
-                                <StreamComponent user={localUser} handleNickname={this.nicknameChanged} />
-                            </div>
-                        )
+                                <div className="OT_root OT_publisher custom-class" id="localUser">
+                                    <StreamComponent user={localUser} handleNickname={this.nicknameChanged} />
+                                </div>
+                            )
                     )}
                     {this.state.groupDisplay && this.state.subscribers.map((sub, i) => (
                         <div key={i} className="OT_root OT_publisher custom-class" id="remoteUsers">
                             <StreamComponent user={sub} streamId={sub.streamManager.stream.streamId} />
                         </div>
                     ))}
-                    {this.state.ipCamSubscribers.map((sub, i) => (	
+                    {this.state.ipCamSubscribers.map((sub, i) => (
                         <div key={i} className="OT_root OT_publisher custom-class" id="remoteCam">
                             <StreamComponent user={sub} streamId={sub.streamManager.stream.streamId} />
-                        </div>	
+                        </div>
                     ))}
                     {localUser !== undefined && localUser.getStreamManager() !== undefined && (
                         <div className="OT_root OT_publisher custom-class" style={chatDisplay}>
@@ -620,7 +654,7 @@ export default class VideoRoomComponent extends Component {
      *   2) Generate a token in OpenVidu Server		(POST /api/tokens)
      *   3) The token must be consumed in Session.connect() method
      */
-    
+
     getIPToken(cameras, isIpcam) {
 
         const sendData = {
@@ -641,9 +675,9 @@ export default class VideoRoomComponent extends Component {
 
     removeCamera(camName) {
 
-        const sendData = { 
+        const sendData = {
             session: this.state.mySessionId,
-            camera : camName 
+            camera: camName
         };
         const headers = {
             'Content-Type': 'application/json'
@@ -654,6 +688,53 @@ export default class VideoRoomComponent extends Component {
                 console.log('Disconnection success!');
             })
             .catch((error) => console.log(error))
+    }
+
+    startRecordCurrentSession(type) {
+        this.setState({ recordingActive: !this.state.recordingActive });
+        this.setState({ record: !this.state.record });
+        const sendData = {
+            session: this.state.mySessionId,
+            outputMode: type,
+            hasAudio: false,
+            hasVideo: true
+        };
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        axios
+            .post('/start-recording', sendData, { headers })
+            .then((response) => {
+                this.setState({ recordingId: response.data.id });
+                this.setState({ recordingActive: !this.state.recordingActive });
+                console.log('Recording Started!');
+            })
+            .catch((error) => {
+                this.setState({ record: !this.state.record });
+                this.setState({ recordingActive: !this.state.recordingActive });
+                console.log(error)
+            })
+    }
+
+    stopRecordCurrentSession() {
+        this.setState({ recordingActive: !this.state.recordingActive });
+        this.setState({ record: !this.state.record });
+        const sendData = {
+            recordingId: this.state.recordingId,
+        };
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        axios
+            .post('/stop-recording', sendData, { headers })
+            .then((response) => {
+                this.setState({ recordingActive: !this.state.recordingActive });
+                console.log('Recording Stopped!');
+            })
+            .catch((error) => {
+                this.setState({ recordingActive: !this.state.recordingActive });
+                console.log(error);
+            })
     }
 
     getToken() {
@@ -686,11 +767,11 @@ export default class VideoRoomComponent extends Component {
                         if (
                             window.confirm(
                                 'No connection to OpenVidu Server. This may be a certificate error at "' +
-                                    this.OPENVIDU_SERVER_URL +
-                                    '"\n\nClick OK to navigate and accept it. ' +
-                                    'If no certificate warning is shown, then check that your OpenVidu Server is up and running at "' +
-                                    this.OPENVIDU_SERVER_URL +
-                                    '"',
+                                this.OPENVIDU_SERVER_URL +
+                                '"\n\nClick OK to navigate and accept it. ' +
+                                'If no certificate warning is shown, then check that your OpenVidu Server is up and running at "' +
+                                this.OPENVIDU_SERVER_URL +
+                                '"',
                             )
                         ) {
                             window.location.assign(this.OPENVIDU_SERVER_URL + '/accept-certificate');

@@ -18,6 +18,7 @@ import QuestionAnswer from '@material-ui/icons/QuestionAnswer';
 import IconButton from '@material-ui/core/IconButton';
 import Group from '@material-ui/icons/Group';
 import DnsIcon from '@material-ui/icons/Dns';
+import FiberSmartRecordIcon from '@material-ui/icons/FiberSmartRecord';
 
 const logo = require('../../assets/images/IUDX-logo.png');
 const ipcam = require('../../assets/images/ipcam.png');
@@ -37,6 +38,7 @@ export default class ToolbarComponent extends Component {
         this.toggleChat = this.toggleChat.bind(this);
         this.showIPCameraDialog = this.showIPCameraDialog.bind(this);
         this.showIPCameraServerDialog = this.showIPCameraServerDialog.bind(this);
+        this.toggleRecord = this.toggleRecord.bind(this);
     }
 
 
@@ -73,7 +75,7 @@ export default class ToolbarComponent extends Component {
         this.props.toggleChat();
     }
 
-    showIPCameraDialog(){
+    showIPCameraDialog() {
         this.props.showIPCameraDialog();
     }
 
@@ -81,9 +83,19 @@ export default class ToolbarComponent extends Component {
         this.props.showIPCameraServerDialog();
     }
 
+    toggleRecord() {
+        if (!this.props.record) {
+            this.props.showRecordingDialog();
+        }
+        else {
+            this.props.stopRecordCurrentSession();
+        }
+    }
+
     render() {
         const mySessionId = this.props.sessionId;
         const localUser = this.props.user;
+
         return (
             <AppBar className="toolbar" id="header">
                 <Toolbar className="toolbar">
@@ -101,7 +113,12 @@ export default class ToolbarComponent extends Component {
 
                     <div className="buttonsContent">
                         <IconButton className="navButton" onClick={this.showIPCameraDialog} >
-                            <img className="ipCamButton" src={ipcam} alt="ipcam"/>
+                            <img className="ipCamButton" src={ipcam} alt="ipcam" />
+                        </IconButton>
+
+                        <IconButton className="navButton" onClick={this.toggleRecord} disabled={this.props.recordingActive} >
+                            {localUser !== undefined && this.props.record ?
+                                <FiberSmartRecordIcon color="secondary" /> : <FiberSmartRecordIcon />}
                         </IconButton>
 
                         <IconButton className="navButton" onClick={this.showIPCameraServerDialog}>
@@ -109,9 +126,9 @@ export default class ToolbarComponent extends Component {
                         </IconButton>
 
                         <IconButton className="navButton" id="navGroupButton" onClick={this.groupStatusChanged}>
-                            {localUser !== undefined && localUser.isGroupActive() ? <Group />  : <Group color="secondary" />}
+                            {localUser !== undefined && localUser.isGroupActive() ? <Group /> : <Group color="secondary" />}
                         </IconButton>
-                        
+
                         <IconButton className="navButton" id="navMicButton" onClick={this.micStatusChanged}>
                             {localUser !== undefined && localUser.isAudioActive() ? <Mic /> : <MicOff color="secondary" />}
                         </IconButton>
@@ -120,22 +137,22 @@ export default class ToolbarComponent extends Component {
                             {localUser !== undefined && localUser.isVideoActive() ? (
                                 <Videocam />
                             ) : (
-                                <VideocamOff color="secondary" />
-                            )}
+                                    <VideocamOff color="secondary" />
+                                )}
                         </IconButton>
 
 
                         {localUser !== undefined &&
-                            localUser.isScreenShareActive() ? 
-                                (
+                            localUser.isScreenShareActive() ?
+                            (
                                 <IconButton onClick={this.stopScreenShare} id="navScreenButton">
                                     <StopScreenShare color="secondary" />
                                 </IconButton>
                             ) : (
                                 (
-                                <IconButton className="navButton" onClick={this.screenShare}>
-                                    <ScreenShare />
-                                </IconButton>) 
+                                    <IconButton className="navButton" onClick={this.screenShare}>
+                                        <ScreenShare />
+                                    </IconButton>)
                             )}
 
                         <IconButton className="navButton" onClick={this.toggleFullscreen}>
@@ -146,7 +163,7 @@ export default class ToolbarComponent extends Component {
                             <PowerSettingsNew />
                         </IconButton>
 
-                         <IconButton onClick={this.toggleChat} id="navChatButton">
+                        <IconButton onClick={this.toggleChat} id="navChatButton">
                             {this.props.showNotification && <div id="point" className="" />}
                             <Tooltip title="Chat">
                                 <QuestionAnswer />
