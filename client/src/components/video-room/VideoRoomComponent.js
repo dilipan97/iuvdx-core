@@ -42,7 +42,8 @@ export default class VideoRoomComponent extends Component {
             groupDisplay: true,
             recordingId: undefined,
             recordingActive: false,
-            record: false
+            record: false,
+            recordingFiles: [],
         };
 
         this.joinSession = this.joinSession.bind(this);
@@ -71,6 +72,7 @@ export default class VideoRoomComponent extends Component {
         this.leaveSessionPage = this.leaveSessionPage.bind(this);
         this.startRecordCurrentSession = this.startRecordCurrentSession.bind(this);
         this.stopRecordCurrentSession = this.stopRecordCurrentSession.bind(this);
+        this.getSessionRecordingList = this.getSessionRecordingList.bind(this);
     }
 
     componentDidMount() {
@@ -549,6 +551,8 @@ export default class VideoRoomComponent extends Component {
     }
 
     showRecordingDialog() {
+
+        this.getSessionRecordingList();
         if (this.state.modalOpen) {
             this.setClose();
         }
@@ -601,7 +605,8 @@ export default class VideoRoomComponent extends Component {
                 <DialogExtensionComponent showDialog={this.state.showExtensionDialog} cancelClicked={this.closeDialogExtension} />
                 <IpCameraComponent open={this.state.modalOpen} setClose={this.setClose} getToken={this.getIPToken} removeCam={this.removeCamera} />
                 <IpcamServerComponent open={this.state.serverModalOpen} setClose={this.setServerClose} getToken={this.getIPToken} removeCam={this.removeCamera} />
-                <RecordingComponent open={this.state.recodingModalOpen} setClose={this.setRecordingClose} startRecord={this.startRecordCurrentSession} />
+                <RecordingComponent open={this.state.recodingModalOpen} setClose={this.setRecordingClose}
+                    startRecord={this.startRecordCurrentSession} filesList={this.state.recordingFiles} />
 
                 <div id="layout" className="bounds">
                     {this.state.localUserOn && localUser !== undefined && localUser.getStreamManager() !== undefined && (
@@ -703,7 +708,7 @@ export default class VideoRoomComponent extends Component {
             'Content-Type': 'application/json'
         };
         axios
-            .post('/start-recording', sendData, { headers })
+            .post('/recording/start', sendData, { headers })
             .then((response) => {
                 this.setState({ recordingId: response.data.id });
                 this.setState({ recordingActive: !this.state.recordingActive });
@@ -726,13 +731,32 @@ export default class VideoRoomComponent extends Component {
             'Content-Type': 'application/json'
         };
         axios
-            .post('/stop-recording', sendData, { headers })
+            .post('/recording/stop', sendData, { headers })
             .then((response) => {
                 this.setState({ recordingActive: !this.state.recordingActive });
                 console.log('Recording Stopped!');
             })
             .catch((error) => {
                 this.setState({ recordingActive: !this.state.recordingActive });
+                console.log(error);
+            })
+    }
+
+
+    getSessionRecordingList() {
+        axios
+            .get('/recording/list')
+            .then((response) => {
+                var data = response.data.map((files, i) => {
+                    return {
+                        folderName: files.id,
+                        type: files.properties.outputMode,
+                        url: files.url
+                    }
+                })
+                this.setState({ recordingFiles: data });
+            })
+            .catch((error) => {
                 console.log(error);
             })
     }

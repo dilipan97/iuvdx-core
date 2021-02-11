@@ -290,7 +290,7 @@ app.post('/deleteipcam', (req, res) => {
     }
 });
 
-app.post('/start-recording', (req, res) => {
+app.post('/recording/start', (req, res) => {
 
     let recordingProperties = {
         outputMode: req.body.outputMode,
@@ -308,12 +308,18 @@ app.post('/start-recording', (req, res) => {
 
 });
 
-app.post('/stop-recording', (req, res) => {
+app.post('/recording/stop', (req, res) => {
 
     let recordingId = req.body.recordingId;
     console.log("Stopping recording | {recordingId}=" + recordingId);
 
     OV.stopRecording(recordingId)
         .then(recording => res.status(200).send(recording))
+        .catch(error => res.status(400).send(error.message));
+});
+
+app.get('/recording/list', function (req, res) {
+    OV.listRecordings()
+        .then(recordings => res.status(200).send(recordings))
         .catch(error => res.status(400).send(error.message));
 });

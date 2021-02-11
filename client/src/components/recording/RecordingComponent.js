@@ -25,7 +25,8 @@ const useStyles = makeStyles((theme) => ({
     paper: {
         outline: 'none',
         position: 'absolute',
-        width: 400,
+        width: 700,
+        height: 400,
         backgroundColor: theme.palette.background.paper,
         padding: theme.spacing(4, 4, 4),
     },
@@ -72,20 +73,29 @@ const RecordingComponent = (props) => {
                         Stream recording
                     </Typography>
                     <Divider />
-                    <br />
-                    <FormControl component="fieldset">
-                        <FormLabel component="legend">Recording Type</FormLabel>
+                    <div style={{ width: '40%', float: 'left', paddingTop: '10px', }}>
+                        <FormControl component="fieldset">
+                            <FormLabel component="legend">Recording Type</FormLabel>
+                            <br />
+                            <RadioGroup aria-label="gender" name="gender1" value={recordType} onChange={handleRadioChange}>
+                                <FormControlLabel value="INDIVIDUAL" control={<Radio />} label="Individual Recording " />
+                                <FormControlLabel value="COMPOSED" control={<Radio />} label="Composed Recording" />
+                            </RadioGroup>
+                        </FormControl>
                         <br />
-                        <RadioGroup aria-label="gender" name="gender1" value={recordType} onChange={handleRadioChange}>
-                            <FormControlLabel value="INDIVIDUAL" control={<Radio />} label="Individual Recording " />
-                            <FormControlLabel value="COMPOSED" control={<Radio />} label="Composed Recording" />
-                        </RadioGroup>
-                    </FormControl>
-                    <br />
-                    <br />
-                    <Button variant="outlined" color="primary" onClick={handleRecording}>
-                        Start Record
-                    </Button>
+                        <br />
+                        <Button variant="outlined" color="primary" onClick={handleRecording}>
+                            Start Record
+                        </Button>
+                    </div>
+                    <div style={{ width: '60%', height: '80%', float: 'right', paddingTop: '10px', overflow: 'auto' }}>
+                        <FormLabel component="legend">Recorded files</FormLabel>
+                        <br />
+                        {props.filesList.map((files, i) => (
+                            <Button key={i} color="primary" style={{ paddingTop: '5px' }}
+                                onClick={() => window.open(files.url)}>{files.folderName} ({files.type}) Download</Button>
+                        ))}
+                    </div>
                 </div>
             </Modal>
         </div>
