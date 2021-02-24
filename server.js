@@ -93,6 +93,7 @@ function createAndPublish(res) {
         fetchSession().then(session => {
             publishCameras().then(success => {
                 // createSubscriberConnection(res);
+                res.send(success);
             })
                 .catch(error => {
                     console.log('Camera connection error!!');
