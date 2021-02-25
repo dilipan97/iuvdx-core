@@ -1,53 +1,35 @@
-import React,{useState} from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import Modal from '@material-ui/core/Modal';
 import Button from '@material-ui/core/Button'
 import TextField from '@material-ui/core/TextField'
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
-import Divider from "@material-ui/core/Divider";
-import Typography from '@material-ui/core/Typography';
 import Checkbox from '@material-ui/core/Checkbox';
 import InputLabel from '@material-ui/core/InputLabel';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogTitle from "@material-ui/core/DialogTitle";
 
-function getModalStyle() {
-  const top = 50;
-  const left = 50;
-
-  return {
-    top: `${top}%`,
-    left: `${left}%`,
-    transform: `translate(-${top}%, -${left}%)`,
-  };
-}
+import './IpcamServerComponent.css';
 
 const useStyles = makeStyles((theme) => ({
-  paper: {
-    outline: 'none',
-    position: 'absolute',
-    width: 900,
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(4, 4, 4),
+  dialog: {
+    marginTop: '30px',
   },
-  container: {
-    maxHeight: 400,
-  },
-  btn: {
-    marginLeft: 30,
-  },
-  title: {
-    display: "flex",
-    alignItems: "center",
-    padding: theme.spacing(0, 1), ...theme.mixins.toolbar,
-    justifyContent: "flex-start"
+  dialogActions: {
+    flex: '0 0 auto',
+    display: 'flex',
+    paddingLeft: '20px',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
   },
   formControl: {
     margin: theme.spacing(1),
@@ -61,17 +43,15 @@ let rowId = 4;
 // contains already connected cameras  
 let connectedCameras = [];
 
-const IpcamServerComponent =(props) =>{
+const IpcamServerComponent = (props) => {
 
   const classes = useStyles();
-  // getModalStyle is not a pure function, we roll the style only on the first render
-  const [modalStyle] = useState(getModalStyle);
 
   // newly added cameras will go into tableRows
   const [tableRows, setTableRows] = useState([
-    {id:0, ip:'rtsp://195.46.114.132/live/ch00_0', port: 7000, type: '', url:'', del:false, err:false},
-    {id:1, ip:'rtsp://98.163.61.242/live/ch00_0', port: 7001, type: '', url:'', del:false, err:false},
-    {id:2, ip:'rtsp://91.191.213.49:554/live_mpeg4.sdp', port: 7002, type: '', url:'', del:false, err:false},
+    { id: 0, ip: 'rtsp://195.46.114.132/live/ch00_0', port: 7000, type: '', url: '', del: false, err: false },
+    { id: 1, ip: 'rtsp://98.163.61.242/live/ch00_0', port: 7001, type: '', url: '', del: false, err: false },
+    { id: 2, ip: 'rtsp://91.191.213.49:554/live_mpeg4.sdp', port: 7002, type: '', url: '', del: false, err: false },
     // {id:3, ip:'/home/dilip/Downloads/sample.mp4', port: 7003, type: '', url:'', del:false, err:false},
     // {id:3, cam:'Hessdalen', ip:'rtsp://freja.hiof.no:1935/rtplive/definst/hessdalen03.stream', del:false, err:false}
   ]);
@@ -90,9 +70,9 @@ const IpcamServerComponent =(props) =>{
     const trows = [...tableRows];
     trows[idx] = {
       id: trows[idx].id,
-      ip: trows[idx].ip !== ''? trows[idx].ip: '',
-      port: trows[idx].port !== 0? trows[idx].port: 0,
-      type: trows[idx].type !== ''? trows[idx].type: '',
+      ip: trows[idx].ip !== '' ? trows[idx].ip : '',
+      port: trows[idx].port !== 0 ? trows[idx].port : 0,
+      type: trows[idx].type !== '' ? trows[idx].type : '',
       url: trows[idx].url,
       del: e.target.checked,
       err: trows[idx].err
@@ -100,13 +80,13 @@ const IpcamServerComponent =(props) =>{
     setTableRows(trows);
 
     // cameras added to list if the box is checked
-    if(e.target.checked) {
+    if (e.target.checked) {
       setDeleteCam([...deleteCam, tableRows[idx].id])
     }
     else {
 
       const index = deleteCam.indexOf(tableRows[idx].id);
-      if(index > -1) {
+      if (index > -1) {
         deleteCam.splice(index, 1);
       }
       setDeleteCam(deleteCam);
@@ -117,13 +97,13 @@ const IpcamServerComponent =(props) =>{
   const deleteSelectedCam = () => {
 
     const camToDelete = [];
-    
+
     // validates the cameras that are to be deleted
-    for(const id of deleteCam) {
+    for (const id of deleteCam) {
 
       const index = tableRows.findIndex(val => val.id === id);
-      if(tableRows[index].ip !== '' && tableRows[index].port !== '' && tableRows[index].type !== '') {
-        
+      if (tableRows[index].ip !== '' && tableRows[index].port !== '' && tableRows[index].type !== '') {
+
         camToDelete.push(tableRows[index].port.toString());
         let indx = connectedCameras.indexOf(id);
 
@@ -137,7 +117,7 @@ const IpcamServerComponent =(props) =>{
     }
 
     // call for diconnecting the cameras 
-    if(camToDelete.length > 0) {
+    if (camToDelete.length > 0) {
       props.removeCam(camToDelete);
     }
 
@@ -150,9 +130,9 @@ const IpcamServerComponent =(props) =>{
     let camToConnect = [];
 
     // adds only the cameras that are not already connected
-    for(const val of tableRows) {
-      if(!val.err && !connectedCameras.includes(val.id)) {
-        if(val.ip !== '' && val.port !== '' && val.type !== '') {
+    for (const val of tableRows) {
+      if (!val.err && !connectedCameras.includes(val.id)) {
+        if (val.ip !== '' && val.port !== '' && val.type !== '') {
           camToConnect.push(val);
           connectedCameras.push(val.id);
         }
@@ -160,13 +140,13 @@ const IpcamServerComponent =(props) =>{
     }
 
     // call for establishing connection
-    if(camToConnect.length > 0) {
+    if (camToConnect.length > 0) {
       props.getToken(camToConnect, false);
     }
 
     const rows = [...tableRows];
- 
-    for(const val of camToConnect) {
+
+    for (const val of camToConnect) {
       switch (val.type) {
         case 'filetortsp':
         case 'rtsptortsp':
@@ -178,20 +158,20 @@ const IpcamServerComponent =(props) =>{
           break;
       }
     }
-    
+
     setTableRows(rows);
   }
 
   // adds new row to the table
   const handleAddRow = () => {
     const item = {
-      id   : rowId,
-      ip   : '',
-      port : 0,
-      type : '',
-      url  : '',
-      del  : false,
-      err  : false
+      id: rowId,
+      ip: '',
+      port: 0,
+      type: '',
+      url: '',
+      del: false,
+      err: false
     };
     rowId++;
     setTableRows([...tableRows, item]);
@@ -208,39 +188,39 @@ const IpcamServerComponent =(props) =>{
 
     const { name, value } = e.target;
     const rows = [...tableRows];
-    
+
     // adds the camera name
-    if(name === 'ip') {
+    if (name === 'ip') {
       rows[idx] = {
-        id     : rows[idx].id,
-        [name] : value,
-        port   : rows[idx].port !== 0? rows[idx].port: 0,
-        type   : rows[idx].type !== ''? rows[idx].type: '',
-        url    : '',
-        del    : rows[idx].del? true: false,
-        err    : rows[idx].err
+        id: rows[idx].id,
+        [name]: value,
+        port: rows[idx].port !== 0 ? rows[idx].port : 0,
+        type: rows[idx].type !== '' ? rows[idx].type : '',
+        url: '',
+        del: rows[idx].del ? true : false,
+        err: rows[idx].err
       }
     }
-    else if(name === 'port') { // adds the camera rstp url
+    else if (name === 'port') { // adds the camera rstp url
       rows[idx] = {
-        id     : rows[idx].id,
-        ip     : rows[idx].ip !== ''? rows[idx].ip: '',
-        [name] : Number(value),
-        type   : rows[idx].type !== ''? rows[idx].type: '',
-        url    : '',
-        del    : rows[idx].del? true: false,
-        err    : value !== '' && rows.find(val => val.port === value)
+        id: rows[idx].id,
+        ip: rows[idx].ip !== '' ? rows[idx].ip : '',
+        [name]: Number(value),
+        type: rows[idx].type !== '' ? rows[idx].type : '',
+        url: '',
+        del: rows[idx].del ? true : false,
+        err: value !== '' && rows.find(val => val.port === value)
       }
     }
     else {
       rows[idx] = {
-        id     : rows[idx].id,
-        ip     : rows[idx].ip !== ''? rows[idx].ip: '',
-        port   : rows[idx].port !== 0? rows[idx].port: 0,
-        [name] : value,
-        url    : '',
-        del    : rows[idx].del? true: false,
-        err    : rows[idx].err
+        id: rows[idx].id,
+        ip: rows[idx].ip !== '' ? rows[idx].ip : '',
+        port: rows[idx].port !== 0 ? rows[idx].port : 0,
+        [name]: value,
+        url: '',
+        del: rows[idx].del ? true : false,
+        err: rows[idx].err
       }
     }
     setTableRows(rows);
@@ -248,7 +228,7 @@ const IpcamServerComponent =(props) =>{
 
   const copyToClipboard = (e) => {
     e.target.select();
-    document.execCommand("copy"); 
+    document.execCommand("copy");
   }
 
   // function to the render dynamic table
@@ -256,18 +236,18 @@ const IpcamServerComponent =(props) =>{
     return tableRows.map((rows, idx) => {
       return (
         <TableRow key={idx}>
-          
+
           <TableCell>
-            <TextField error={tableRows[idx].err? true: false} label="Video url" name="ip" variant="outlined" 
-              value={tableRows[idx].ip} onChange={handleChange(idx)}/>
+            <TextField error={tableRows[idx].err ? true : false} label="Video url" name="ip" variant="outlined"
+              value={tableRows[idx].ip} onChange={handleChange(idx)} />
           </TableCell>
           <TableCell>
-            <TextField type="number" error={tableRows[idx].err? true: false} disabled={tableRows[idx].err? true: false} 
-            label="Port" name="port" variant="outlined" helperText={tableRows[idx].err?'Duplicate port':''} 
-              value={tableRows[idx].port} onChange={handleChange(idx)}/>
+            <TextField type="number" error={tableRows[idx].err ? true : false} disabled={tableRows[idx].err ? true : false}
+              label="Port" name="port" variant="outlined" helperText={tableRows[idx].err ? 'Duplicate port' : ''}
+              value={tableRows[idx].port} onChange={handleChange(idx)} />
           </TableCell>
           <TableCell>
-             <FormControl variant="outlined" className={classes.formControl}>
+            <FormControl variant="outlined" className={classes.formControl}>
               <InputLabel htmlFor="outlined-age-native-simple">Server Type</InputLabel>
               <Select
                 name="type"
@@ -279,7 +259,7 @@ const IpcamServerComponent =(props) =>{
                 <MenuItem value={"rtsptortsp"}>Rtsp to Rtsp</MenuItem>
                 <MenuItem value={"filetortsp"}>File to Rtsp</MenuItem>
               </Select>
-            </FormControl> 
+            </FormControl>
           </TableCell>
           <TableCell>
             <TextField
@@ -291,9 +271,9 @@ const IpcamServerComponent =(props) =>{
               variant="filled"
               onClick={copyToClipboard}
             />
-            </TableCell>
+          </TableCell>
           <TableCell>
-           <Checkbox  indeterminate inputProps={{ 'aria-label': 'indeterminate checkbox' }}  checked={tableRows[idx].del} onChange={handleChecked(idx)}/>
+            <Checkbox indeterminate inputProps={{ 'aria-label': 'indeterminate checkbox' }} checked={tableRows[idx].del} onChange={handleChecked(idx)} />
           </TableCell>
         </TableRow>
       )
@@ -302,58 +282,52 @@ const IpcamServerComponent =(props) =>{
 
   return (
     <div>
-      <Modal
+      <Dialog
         open={props.open}
         onClose={handleClose}
-        aria-labelledby="simple-modal-title"
-        aria-describedby="simple-modal-description"
+        aria-labelledby="scroll-dialog-title"
+        aria-describedby="scroll-dialog-description"
+        fullWidth={true}
+        maxWidth={'lg'}
+        className={classes.dialog}
       >
-       
-        <div style={modalStyle} className={classes.paper}>
-          <Typography variant="h4" className={classes.title} >
-            Video Output Server
-          </Typography>
-          <Divider />
-          <br/>
-          <Button variant="contained" color="primary" onClick={connectSelectedCam}>
+        <DialogTitle id="scroll-dialog-title">Video Output Server</DialogTitle>
+        <DialogActions className={classes.dialogActions}>
+          <Button variant="contained" color="primary" onClick={connectSelectedCam} disabled>
             Connect
           </Button>
-          <Button className={classes.btn} variant="contained" color="secondary" onClick={deleteSelectedCam}>
+          <Button variant="contained" color="secondary" onClick={deleteSelectedCam} disabled>
             Disconnect
           </Button>
-          <br/>
-          <br/>
-          <TableContainer component={Paper} className={classes.container}>
-            <Table className={classes.table} aria-label="simple table">
-                {/* <colgroup>
-                    <col style={{width:'50%'}}/>
-                    <col style={{width:'20%'}}/>
-                    <col style={{width:'25%'}}/>
-                </colgroup> */}
-                <TableHead>
-                    <TableRow>
-                    <TableCell>Video Url</TableCell>
-                    <TableCell>Service Port</TableCell>
-                    <TableCell>Server type </TableCell>
-                    <TableCell>Output Url</TableCell>
-                    <TableCell>Remove</TableCell>
-                    </TableRow>
-                </TableHead>
+        </DialogActions>
+        <DialogContent dividers={true}>
+          <Paper className="container">
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Video Url</TableCell>
+                  <TableCell>Service Port</TableCell>
+                  <TableCell>Server type </TableCell>
+                  <TableCell>Output Url</TableCell>
+                  <TableCell>Remove</TableCell>
+                </TableRow>
+              </TableHead>
               <TableBody>
                 {renderTable()}
               </TableBody>
             </Table>
-          </TableContainer>
-            <br/>
-            <Button variant="outlined" color="primary" onClick={handleAddRow}>
-              Add Row
+          </Paper>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="outlined" color="primary" onClick={handleAddRow}>
+            Add Row
             </Button>
-            <Button className={classes.btn} variant="outlined" color="secondary" onClick={handleRemoveRow}>
-              Delete Empty Rows
+          <Button className={classes.btn} variant="outlined" color="secondary" onClick={handleRemoveRow}>
+            Delete Empty Rows
             </Button>
-        </div>
-      </Modal>
-    </div>
+        </DialogActions>
+      </Dialog>
+    </div >
   );
 }
 export default IpcamServerComponent;

@@ -281,6 +281,7 @@ app.post('/deleteipcam', (req, res) => {
                     }
                 }
             }
+            res.send('disconnection sucess');
         })
             .catch(error => {
                 console.log('session creation error!!');

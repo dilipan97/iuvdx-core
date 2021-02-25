@@ -1,51 +1,33 @@
 import React, { useState } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import Modal from '@material-ui/core/Modal';
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogTitle from "@material-ui/core/DialogTitle";
 import Button from '@material-ui/core/Button'
 import TextField from '@material-ui/core/TextField'
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
-import Divider from "@material-ui/core/Divider";
-import Typography from '@material-ui/core/Typography';
 import Checkbox from '@material-ui/core/Checkbox';
+import { makeStyles } from '@material-ui/core/styles';
 
-function getModalStyle() {
-  const top = 50;
-  const left = 50;
-
-  return {
-    top: `${top}%`,
-    left: `${left}%`,
-    transform: `translate(-${top}%, -${left}%)`,
-  };
-}
+import './IpCameraComponent.css';
 
 const useStyles = makeStyles((theme) => ({
-  paper: {
-    outline: 'none',
-    position: 'absolute',
-    width: 700,
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(4, 4, 4),
+  dialog: {
+    marginTop: '30px',
   },
-  container: {
-    maxHeight: 400,
-  },
-  btn: {
-    marginLeft: 30,
-  },
-  title: {
-    display: "flex",
-    alignItems: "center",
-    padding: theme.spacing(0, 1), ...theme.mixins.toolbar,
-    justifyContent: "flex-start"
+  dialogActions: {
+    flex: '0 0 auto',
+    display: 'flex',
+    paddingLeft: '20px',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
   }
-}));
+}))
 
 // assigning unique id for each camera
 let rowId = 5;
@@ -56,8 +38,6 @@ let connectedCameras = [];
 const IpCameraComponent = (props) => {
 
   const classes = useStyles();
-  // getModalStyle is not a pure function, we roll the style only on the first render
-  const [modalStyle] = useState(getModalStyle);
 
   // newly added cameras will go into tableRows
   const [tableRows, setTableRows] = useState([
@@ -66,7 +46,6 @@ const IpCameraComponent = (props) => {
     { id: 2, cam: 'Orient Chowmuhani 1', ip: 'rtsp://admin:admin123@video-server.iudx.io:8554/orient_chowmuhani_1', del: false, err: false },
     { id: 3, cam: 'Orient Chowmuhani 2', ip: 'rtsp://admin:admin123@video-server.iudx.io:8554/orient_chowmuhani_2', del: false, err: false },
     { id: 4, cam: 'Orient Chowmuhani 3', ip: 'rtsp://admin:admin123@video-server.iudx.io:8554/orient_chowmuhani_3', del: false, err: false },
-    // {id:3, cam:'Hessdalen', ip:'rtsp://freja.hiof.no:1935/rtplive/definst/hessdalen03.stream', del:false, err:false}
   ]);
 
   // deleted cameras is stored in this variable
@@ -208,12 +187,12 @@ const IpCameraComponent = (props) => {
     return tableRows.map((rows, idx) => {
       return (
         <TableRow key={idx}>
-          <TableCell>
-            <TextField error={tableRows[idx].err ? true : false} label="Name" name="cam" variant="outlined" helperText={tableRows[idx].err ? 'Duplicate camera name' : ''}
+          <TableCell >
+            <TextField style={{ width: "100%" }} error={tableRows[idx].err ? true : false} label="Name" name="cam" variant="outlined" helperText={tableRows[idx].err ? 'Duplicate camera name' : ''}
               value={tableRows[idx].cam} onChange={handleChange(idx)} />
           </TableCell>
           <TableCell>
-            <TextField error={tableRows[idx].err ? true : false} disabled={tableRows[idx].err ? true : false} label="rtsp stream url" name="ip" variant="outlined"
+            <TextField style={{ width: "100%" }} error={tableRows[idx].err ? true : false} disabled={tableRows[idx].err ? true : false} label="rtsp stream url" name="ip" variant="outlined"
               value={tableRows[idx].ip} onChange={handleChange(idx)} />
           </TableCell>
           <TableCell>
@@ -226,29 +205,27 @@ const IpCameraComponent = (props) => {
 
   return (
     <div>
-      <Modal
+      <Dialog
         open={props.open}
         onClose={handleClose}
-        aria-labelledby="simple-modal-title"
-        aria-describedby="simple-modal-description"
+        aria-labelledby="scroll-dialog-title"
+        aria-describedby="scroll-dialog-description"
+        fullWidth={true}
+        maxWidth={'md'}
+        className={classes.dialog}
       >
-
-        <div style={modalStyle} className={classes.paper}>
-          <Typography variant="h4" className={classes.title} >
-            Subscribe to IP Cameras
-          </Typography>
-          <Divider />
-          <br />
+        <DialogTitle id="scroll-dialog-title">Subscribe to IP Cameras</DialogTitle>
+        <DialogActions className={classes.dialogActions}>
           <Button variant="contained" color="primary" onClick={connectSelectedCam}>
             Connect
           </Button>
-          <Button className={classes.btn} variant="contained" color="secondary" onClick={deleteSelectedCam}>
+          <Button variant="contained" color="secondary" onClick={deleteSelectedCam}>
             Disconnect
           </Button>
-          <br />
-          <br />
-          <TableContainer component={Paper} className={classes.container}>
-            <Table className={classes.table} aria-label="simple table">
+        </DialogActions>
+        <DialogContent dividers={true}>
+          <Paper className="container">
+            <Table>
               <TableHead>
                 <TableRow>
                   <TableCell>Camera Name</TableCell>
@@ -260,16 +237,17 @@ const IpCameraComponent = (props) => {
                 {renderTable()}
               </TableBody>
             </Table>
-          </TableContainer>
-          <br />
+          </Paper>
+        </DialogContent>
+        <DialogActions>
           <Button variant="outlined" color="primary" onClick={handleAddRow}>
             Add Row
             </Button>
-          <Button className={classes.btn} variant="outlined" color="secondary" onClick={handleRemoveRow}>
+          <Button variant="outlined" color="secondary" onClick={handleRemoveRow}>
             Delete Empty Rows
             </Button>
-        </div>
-      </Modal>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }

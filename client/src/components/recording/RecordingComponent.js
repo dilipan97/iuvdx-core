@@ -1,48 +1,15 @@
-import React, { useState } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import Modal from '@material-ui/core/Modal';
+import React from 'react';
 import Button from '@material-ui/core/Button'
-import Divider from "@material-ui/core/Divider";
-import Typography from '@material-ui/core/Typography';
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
-
-function getModalStyle() {
-    const top = 50;
-    const left = 50;
-
-    return {
-        top: `${top}%`,
-        left: `${left}%`,
-        transform: `translate(-${top}%, -${left}%)`,
-    };
-}
-
-const useStyles = makeStyles((theme) => ({
-    paper: {
-        outline: 'none',
-        position: 'absolute',
-        width: 700,
-        height: 400,
-        backgroundColor: theme.palette.background.paper,
-        padding: theme.spacing(4, 4, 4),
-    },
-    title: {
-        display: "flex",
-        alignItems: "center",
-        padding: theme.spacing(0, 1), ...theme.mixins.toolbar,
-        justifyContent: "flex-start"
-    },
-}));
+import Dialog from "@material-ui/core/Dialog";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogTitle from "@material-ui/core/DialogTitle";
 
 const RecordingComponent = (props) => {
-
-    const classes = useStyles();
-    // getModalStyle is not a pure function, we roll the style only on the first render
-    const [modalStyle] = useState(getModalStyle);
 
     const [recordType, setRecordType] = React.useState('INDIVIDUAL');
 
@@ -61,19 +28,18 @@ const RecordingComponent = (props) => {
 
     return (
         <div>
-            <Modal
+            <Dialog
                 open={props.open}
                 onClose={handleClose}
-                aria-labelledby="simple-modal-title"
-                aria-describedby="simple-modal-description"
+                aria-labelledby="scroll-dialog-title"
+                aria-describedby="scroll-dialog-description"
+                fullWidth={true}
+                maxWidth={'md'}
+                style={{ marginTop: '30px' }}
             >
-
-                <div style={modalStyle} className={classes.paper}>
-                    <Typography variant="h4" className={classes.title} >
-                        Stream recording
-                    </Typography>
-                    <Divider />
-                    <div style={{ width: '40%', float: 'left', paddingTop: '10px', }}>
+                <DialogTitle id="scroll-dialog-title"> Stream recording</DialogTitle>
+                <DialogContent dividers={true}>
+                    <div style={{ width: '30%', float: 'left', paddingTop: '10px', }}>
                         <FormControl component="fieldset">
                             <FormLabel component="legend">Recording Type</FormLabel>
                             <br />
@@ -88,7 +54,7 @@ const RecordingComponent = (props) => {
                             Start Record
                         </Button>
                     </div>
-                    <div style={{ width: '60%', height: '80%', float: 'right', paddingTop: '10px', overflow: 'auto' }}>
+                    <div style={{ width: '60%', height: '80%', float: 'right', paddingTop: '10px', overflow: 'auto', textAlign: 'center' }}>
                         <FormLabel component="legend">Recorded files</FormLabel>
                         <br />
                         {props.filesList.map((files, i) => (
@@ -96,8 +62,8 @@ const RecordingComponent = (props) => {
                                 onClick={() => window.open(files.url)}>{files.folderName} ({files.type}) Download</Button>
                         ))}
                     </div>
-                </div>
-            </Modal>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
