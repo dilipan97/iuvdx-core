@@ -167,7 +167,7 @@ function publishCameras() {
                             };
 
                             // "mySession" being a Session object
-                            await mySession.createConnection(connectionProperties)
+                            await mySession.createIPCamConnection(connectionProperties)
                                 .then(ipcamConnection => {
                                     console.log('session connected to ip camera : ' + cameraName);
                                 })
@@ -196,7 +196,7 @@ function publishCameras() {
                             };
 
                             // "mySession" being a Session object
-                            await mySession.createConnection(connectionProperties)
+                            await mySession.createServerConnection(connectionProperties)
                                 .then(ipcamConnection => {
                                     console.log('session connected to ip camera : ' + cameraUri);
                                 })
