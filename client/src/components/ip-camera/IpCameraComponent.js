@@ -1,4 +1,4 @@
-import React,{useState} from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Modal from '@material-ui/core/Modal';
 import Button from '@material-ui/core/Button'
@@ -48,12 +48,12 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 // assigning unique id for each camera
-let rowId = 4;
+let rowId = 5;
 
 // contains already connected cameras  
 let connectedCameras = [];
 
-const IpCameraComponent =(props) =>{
+const IpCameraComponent = (props) => {
 
   const classes = useStyles();
   // getModalStyle is not a pure function, we roll the style only on the first render
@@ -61,9 +61,11 @@ const IpCameraComponent =(props) =>{
 
   // newly added cameras will go into tableRows
   const [tableRows, setTableRows] = useState([
-    {id:0, cam:'Russian building', ip:'rtsp://195.46.114.132/live/ch00_0', del:false, err:false},
-    {id:1, cam:'Wickenburg, Arizona', ip:'rtsp://98.163.61.242/live/ch00_0', del:false, err:false},
-    {id:2, cam:'City', ip:'rtsp://91.191.213.49:554/live_mpeg4.sdp', del:false, err:false},
+    { id: 0, cam: 'Abhoy Nagar Bridge', ip: 'rtsp://admin:admin123@video-server.iudx.io:8554/abhoy_nagar_bridge', del: false, err: false },
+    { id: 1, cam: 'Melar Math', ip: 'rtsp://admin:admin123@video-server.iudx.io:8554/melar_math', del: false, err: false },
+    { id: 2, cam: 'Orient Chowmuhani 1', ip: 'rtsp://admin:admin123@video-server.iudx.io:8554/orient_chowmuhani_1', del: false, err: false },
+    { id: 3, cam: 'Orient Chowmuhani 2', ip: 'rtsp://admin:admin123@video-server.iudx.io:8554/orient_chowmuhani_2', del: false, err: false },
+    { id: 4, cam: 'Orient Chowmuhani 3', ip: 'rtsp://admin:admin123@video-server.iudx.io:8554/orient_chowmuhani_3', del: false, err: false },
     // {id:3, cam:'Hessdalen', ip:'rtsp://freja.hiof.no:1935/rtplive/definst/hessdalen03.stream', del:false, err:false}
   ]);
 
@@ -81,21 +83,21 @@ const IpCameraComponent =(props) =>{
     const trows = [...tableRows];
     trows[idx] = {
       id: trows[idx].id,
-      cam: trows[idx].cam !== ''? trows[idx].cam: '',
-      ip: trows[idx].ip !== ''? trows[idx].ip: '',
+      cam: trows[idx].cam !== '' ? trows[idx].cam : '',
+      ip: trows[idx].ip !== '' ? trows[idx].ip : '',
       del: e.target.checked,
       err: trows[idx].err
     }
     setTableRows(trows);
 
     // cameras added to list if the box is checked
-    if(e.target.checked) {
+    if (e.target.checked) {
       setDeleteCam([...deleteCam, tableRows[idx].id])
     }
     else {
 
       const index = deleteCam.indexOf(tableRows[idx].id);
-      if(index > -1) {
+      if (index > -1) {
         deleteCam.splice(index, 1);
       }
       setDeleteCam(deleteCam);
@@ -106,13 +108,13 @@ const IpCameraComponent =(props) =>{
   const deleteSelectedCam = () => {
 
     const camToDelete = [];
-    
+
     // validates the cameras that are to be deleted
-    for(const id of deleteCam) {
+    for (const id of deleteCam) {
 
       const index = tableRows.findIndex(val => val.id === id);
-      if(tableRows[index].cam !== '' && tableRows[index].ip !== '') {
-        
+      if (tableRows[index].cam !== '' && tableRows[index].ip !== '') {
+
         camToDelete.push(tableRows[index].cam);
         let indx = connectedCameras.indexOf(id);
 
@@ -126,7 +128,7 @@ const IpCameraComponent =(props) =>{
     }
 
     // call for diconnecting the cameras 
-    if(camToDelete.length > 0) {
+    if (camToDelete.length > 0) {
       props.removeCam(camToDelete);
     }
 
@@ -139,9 +141,9 @@ const IpCameraComponent =(props) =>{
     let camToConnect = [];
 
     // adds only the cameras that are not already connected
-    for(const val of tableRows) {
-      if(!val.err && !connectedCameras.includes(val.id)) {
-        if(val.cam !== '' && val.ip !== '') {
+    for (const val of tableRows) {
+      if (!val.err && !connectedCameras.includes(val.id)) {
+        if (val.cam !== '' && val.ip !== '') {
           camToConnect.push(val);
           connectedCameras.push(val.id);
         }
@@ -149,7 +151,7 @@ const IpCameraComponent =(props) =>{
     }
 
     // call for establishing connection
-    if(camToConnect.length > 0) {
+    if (camToConnect.length > 0) {
       props.getToken(camToConnect, true);
     }
   }
@@ -157,11 +159,11 @@ const IpCameraComponent =(props) =>{
   // adds new row to the table
   const handleAddRow = () => {
     const item = {
-      id  : rowId,
-      cam : '',
-      ip  : '',
-      del : false,
-      err : false
+      id: rowId,
+      cam: '',
+      ip: '',
+      del: false,
+      err: false
     };
     rowId++;
     setTableRows([...tableRows, item]);
@@ -180,22 +182,22 @@ const IpCameraComponent =(props) =>{
     const rows = [...tableRows];
 
     // adds the camera name
-    if(name === 'cam') {
+    if (name === 'cam') {
       rows[idx] = {
-        id    : rows[idx].id,
+        id: rows[idx].id,
         [name]: value,
-        ip    : rows[idx].ip !== ''? rows[idx].ip: '',
-        del   : rows[idx].del? true: false,
-        err   : value !== '' && rows.find(val => val.cam === value)
+        ip: rows[idx].ip !== '' ? rows[idx].ip : '',
+        del: rows[idx].del ? true : false,
+        err: value !== '' && rows.find(val => val.cam === value)
       }
     }
     else { // adds the camera rstp url
       rows[idx] = {
-        id    : rows[idx].id,
-        cam   : rows[idx].cam !== ''? rows[idx].cam: '',
+        id: rows[idx].id,
+        cam: rows[idx].cam !== '' ? rows[idx].cam : '',
         [name]: value,
-        del   : rows[idx].del? true: false,
-        err   : rows[idx].err
+        del: rows[idx].del ? true : false,
+        err: rows[idx].err
       }
     }
     setTableRows(rows);
@@ -207,15 +209,15 @@ const IpCameraComponent =(props) =>{
       return (
         <TableRow key={idx}>
           <TableCell>
-            <TextField error={tableRows[idx].err? true: false} label="Name" name="cam" variant="outlined" helperText={tableRows[idx].err?'Duplicate camera name':''} 
-              value={tableRows[idx].cam} onChange={handleChange(idx)}/>
+            <TextField error={tableRows[idx].err ? true : false} label="Name" name="cam" variant="outlined" helperText={tableRows[idx].err ? 'Duplicate camera name' : ''}
+              value={tableRows[idx].cam} onChange={handleChange(idx)} />
           </TableCell>
           <TableCell>
-            <TextField error={tableRows[idx].err? true: false} disabled={tableRows[idx].err? true: false} label="rtsp stream url" name="ip" variant="outlined" 
-              value={tableRows[idx].ip} onChange={handleChange(idx)}/>
+            <TextField error={tableRows[idx].err ? true : false} disabled={tableRows[idx].err ? true : false} label="rtsp stream url" name="ip" variant="outlined"
+              value={tableRows[idx].ip} onChange={handleChange(idx)} />
           </TableCell>
           <TableCell>
-           <Checkbox  indeterminate inputProps={{ 'aria-label': 'indeterminate checkbox' }}  checked={tableRows[idx].del} onChange={handleChecked(idx)}/>
+            <Checkbox indeterminate inputProps={{ 'aria-label': 'indeterminate checkbox' }} checked={tableRows[idx].del} onChange={handleChecked(idx)} />
           </TableCell>
         </TableRow>
       )
@@ -230,21 +232,21 @@ const IpCameraComponent =(props) =>{
         aria-labelledby="simple-modal-title"
         aria-describedby="simple-modal-description"
       >
-       
+
         <div style={modalStyle} className={classes.paper}>
           <Typography variant="h4" className={classes.title} >
             Subscribe to IP Cameras
           </Typography>
           <Divider />
-          <br/>
+          <br />
           <Button variant="contained" color="primary" onClick={connectSelectedCam}>
             Connect
           </Button>
           <Button className={classes.btn} variant="contained" color="secondary" onClick={deleteSelectedCam}>
             Disconnect
           </Button>
-          <br/>
-          <br/>
+          <br />
+          <br />
           <TableContainer component={Paper} className={classes.container}>
             <Table className={classes.table} aria-label="simple table">
               <TableHead>
@@ -259,12 +261,12 @@ const IpCameraComponent =(props) =>{
               </TableBody>
             </Table>
           </TableContainer>
-            <br/>
-            <Button variant="outlined" color="primary" onClick={handleAddRow}>
-              Add Row
+          <br />
+          <Button variant="outlined" color="primary" onClick={handleAddRow}>
+            Add Row
             </Button>
-            <Button className={classes.btn} variant="outlined" color="secondary" onClick={handleRemoveRow}>
-              Delete Empty Rows
+          <Button className={classes.btn} variant="outlined" color="secondary" onClick={handleRemoveRow}>
+            Delete Empty Rows
             </Button>
         </div>
       </Modal>

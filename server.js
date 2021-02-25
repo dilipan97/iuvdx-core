@@ -167,7 +167,7 @@ function publishCameras() {
                             };
 
                             // "mySession" being a Session object
-                            await mySession.createIPCamConnection(connectionProperties)
+                            await mySession.createConnection(connectionProperties)
                                 .then(ipcamConnection => {
                                     console.log('session connected to ip camera : ' + cameraName);
                                 })
@@ -196,7 +196,7 @@ function publishCameras() {
                             };
 
                             // "mySession" being a Session object
-                            await mySession.createServerConnection(connectionProperties)
+                            await mySession.createConnection(connectionProperties)
                                 .then(ipcamConnection => {
                                     console.log('session connected to ip camera : ' + cameraUri);
                                 })
@@ -323,4 +323,12 @@ app.get('/recording/list', function (req, res) {
     OV.listRecordings()
         .then(recordings => res.status(200).send(recordings))
         .catch(error => res.status(400).send(error.message));
+});
+
+app.post('/recording/scheduled/start', (req, res) => {
+
+});
+
+app.post('/recording/scheduled/stop', (req, res) => {
+
 });
